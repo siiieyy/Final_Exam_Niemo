@@ -1,0 +1,67 @@
+---
+- hosts: all
+  become: true
+  pre_tasks:
+    - name: Install Docker
+      apt:
+        name: docker
+        state: present
+      when: ansible_distribution == "Ubuntu"
+
+    - name: Install Docker
+      yum:
+        name: docker
+        state: present
+      when: ansible_distribution == "CentOS"
+
+    - name: Install Docker SDK
+      become: true
+      pip:
+        name: docker-py
+        executable: pip3
+   
+    - name: Ensure Docker group exists
+      become: true
+      group:
+        name: docker
+        state: present
+
+    - name: Add user to the Docker group
+      become: true
+      user:
+        name: workstation
+        groups: docker
+        append: yes
+
+    - name: Add user to the Docker group
+      shell:
+        cmd: usermod -aG docker workstation
+
+    - name: Create Dockerfile directory
+      file:
+        path: /root/demo-dockerfile
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Copy Dockerfile for Ubuntu
+      copy:
+        src: dockerfile1
+        dest: /root/demo-dockerfile/dockerfile
+        owner: root
+        group: root
+        mode: '0755'
+      when: ansible_distribution == "Ubuntu"
+
+    - name: Copy Dockerfile for CentOS
+      copy:
+        src: dockerfile2
+        dest: /root/demo-dockerfile/dockerfile
+        owner: root
+        group: root
+        mode: '0755'
+      when: ansible_distribution == "CentOS"
+
+    - name: Change MOTD
+      include_tasks: motd.yaml
