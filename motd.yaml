@@ -1,7 +1,0 @@
----
-- name: Create Motd
-  become: true
-  template:
-    src: motd.j2
-    dest: /etc/motd
-    mode: '0644'
